@@ -1,14 +1,9 @@
 /**
- * FreeRTOS Mutex Demo
- * 
- * Increment a shared global variable with mutex protection.
- * 
  * Date: January 20, 2021
  * Author: Shawn Hymel
  * License: 0BSD
  */
 
-// You'll likely need this on vanilla FreeRTOS
 //#include <semphr.h>
 
 // Use only core 1 for demo purposes
@@ -36,22 +31,17 @@ void incTask(void *parameters) {
     // Take mutex prior to critical section
     if (xSemaphoreTake(mutex, 0) == pdTRUE) {
 
-      // Critical section (poor demonstration of "shared_var++")
       local_var = shared_var;
       local_var++;
       vTaskDelay(random(100, 500) / portTICK_PERIOD_MS);
       shared_var = local_var;
       
-      // Print out new shared variable
-      // This is different than in the video--print shared_var inside the
-      // critical section to avoid having it be changed by the other task.
       Serial.println(shared_var);
   
-      // Give mutex after critical section
-      xSemaphoreGive(mutex);
+      
+      xSemaphoreGive(mutex);  // releasing the mutex.
 
     } else {
-      // Do something else
     }
   }
 }
@@ -71,9 +61,8 @@ void setup() {
   vTaskDelay(1000 / portTICK_PERIOD_MS);
   Serial.println();
   Serial.println("---FreeRTOS Race Condition Demo---");
-
-  // Create mutex before starting tasks
-  mutex = xSemaphoreCreateMutex();
+  
+  mutex = xSemaphoreCreateMutex();// creating the mutex
 
   // Start task 1
   xTaskCreatePinnedToCore(incTask,
